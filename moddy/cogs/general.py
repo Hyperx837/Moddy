@@ -12,7 +12,6 @@ class General(commands.Cog):
     @commands.command(name="clear")
     @commands.has_permissions(manage_messages=True)
     async def clear_messages(self, ctx: commands.Context, amount: int = 0):
-        # if ctx.author
         await ctx.channel.purge(limit=amount)
     
     @commands.command(name="reload")

@@ -9,7 +9,7 @@ from moddy.config import cogs, discordbot_token
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
-        super().__init__(command_prefix=commands.when_mentioned_or("$"), **kwargs)
+        super().__init__(command_prefix=commands.when_mentioned_or("m."), **kwargs)
         self.load_cogs()
 
     def load_cogs(self, *, mode="load"):
@@ -37,7 +37,7 @@ class Bot(commands.Bot):
             self.is_connected = False
 
     async def on_message(self, message: discord.Message):
-        if message.content == "m.restart" and self.is_owner(message.author):
+        if message.content == "m.restart" and await self.is_owner(message.author):
             self.load_cogs(mode="reload")
             log("[bold green]Cogs successfully reloaded")
         return await super().on_message(message)

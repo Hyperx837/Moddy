@@ -39,7 +39,7 @@ class Quiz(commands.Cog):
 
     @commands.command(name="quiz")
     async def send_quiz(self, ctx: commands.Context):
-        log(f'{ctx.author.mention} Requested a quiz with {ctx.message.content}')
+        log(f'[{ctx.author.color}]@{ctx.author.name}[/{ctx.author.color}] Requested a quiz with {ctx.message.content}')
         json_data = await get_quiz()
         question, answers, correct_answer = parse_data(json_data)
         msg: discord.Message = await ctx.send(
@@ -52,19 +52,18 @@ class Quiz(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        if user.id == self.bot.user.id:
+        # print(user.id, self.bot.user.id)
+        # print(self)
+        if user.id == self.bot.user.id or self.quiz_id != reaction.message.id:
             return
 
         log(f'[{user.color}]@{user.name}[/{user.color}] reacted to question "{reaction.message.id}" with a {reaction.emoji}')
         log(f'Guild: {reaction.message.guild} | Channel: {reaction.message.channel}')
-
-        if self.quiz_id != reaction.message.id:
-            return
         given_answer = numbers.index(reaction.emoji)
         msg = (
             "I knew that you were the only one who was going to get it the first time"
             if given_answer == self.correct_answer
-            else "I already told my friend that you might cause a nexus event if you get it right the first time"
+            else "I had told my friend that you might cause a nexus event if you get it right the first time"
         )
         await user.send(msg)
         await reaction.message.remove_reaction(reaction.emoji, user)

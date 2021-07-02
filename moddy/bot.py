@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 import discord
 from discord.ext import commands
-from moddy.utils import log
 
 from moddy.config import cogs, discordbot_token
+from moddy.utils import log
 
 
 class Bot(commands.Bot):
@@ -36,16 +36,11 @@ class Bot(commands.Bot):
             log("[red]Connection closed with discord websocket")
             self.is_connected = False
 
-    async def on_message(self, message: discord.Message):
-        if message.content == "m.restart" and await self.is_owner(message.author):
-            self.load_cogs(mode="reload")
-            log("[bold green]Cogs successfully reloaded")
-        return await super().on_message(message)
 
 
-bot = Bot()
 # write general commands here
 
 
 def main():
+    bot = Bot()
     bot.run(discordbot_token)

@@ -52,12 +52,11 @@ class Quiz(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        # print(user.id, self.bot.user.id)
-        # print(self)
         if user.id == self.bot.user.id or self.quiz_id != reaction.message.id:
             return
 
         log(f'[{user.color}]@{user.name}[/{user.color}] reacted to question "{reaction.message.id}" with a {reaction.emoji}')
+        log(reaction.emoji)
         log(f'Guild: {reaction.message.guild} | Channel: {reaction.message.channel}')
         given_answer = numbers.index(reaction.emoji)
         msg = (

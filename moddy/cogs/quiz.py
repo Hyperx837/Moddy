@@ -4,9 +4,9 @@ import asyncio
 import aiohttp
 import discord
 from discord.ext import commands
-from discord.message import Message
 from moddy.config import quizapi_token
-from moddy.utils import ModdyEmbed, log, numbers
+from moddy.embeds import ModdyEmbed
+from moddy.utils import log, numbers, user_mention
 
 params = {"apiKey": quizapi_token, "limit": 1}
 
@@ -39,7 +39,7 @@ class Quiz(commands.Cog):
 
     @commands.command(name="quiz")
     async def send_quiz(self, ctx: commands.Context):
-        log(f'[{ctx.author.color}]@{ctx.author.name}[/{ctx.author.color}] Requested a quiz with {ctx.message.content}')
+        user_mention(ctx.author, f"Requested a quiz with {ctx.message.content}")
         json_data = await get_quiz()
         question, answers, correct_answer = parse_data(json_data)
         msg: discord.Message = await ctx.send(
@@ -55,9 +55,11 @@ class Quiz(commands.Cog):
         if user.id == self.bot.user.id or self.quiz_id != reaction.message.id:
             return
 
-        log(f'[{user.color}]@{user.name}[/{user.color}] reacted to question "{reaction.message.id}" with a {reaction.emoji}')
+        user_mention(
+            user, f'reacted to question "{reaction.message.id}" with a {reaction.emoji}'
+        )
         log(reaction.emoji)
-        log(f'Guild: {reaction.message.guild} | Channel: {reaction.message.channel}')
+        log(f"Guild: {reaction.message.guild} | Channel: {reaction.message.channel}")
         given_answer = numbers.index(reaction.emoji)
         msg = (
             "I knew that you were the only one who was going to get it the first time"

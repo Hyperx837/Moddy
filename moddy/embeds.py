@@ -16,3 +16,6 @@ def command_not_allowed(command: str, permission: str):
         f" of the missing permission **{permission}**"
     )
     return ModdyEmbed(title, desc)
+
+
+reload_embed = ModdyEmbed("Bot successfully reloaded 🦾", "😊")

@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 from discord.ext import commands
 
-from moddy.config import cogs, discordbot_token
+from moddy.config import discordbot_token
 from moddy.utils import log
 
 
 class Bot(commands.Bot):
     def __init__(self, **kwargs):
-        super().__init__(command_prefix=commands.when_mentioned_or(">"), **kwargs)
+        super().__init__(command_prefix=commands.when_mentioned_or("."), **kwargs)
         self.load_cogs()
 
     def load_cogs(self, *, mode="load"):
+        from moddy.config import cogs
+
         for cog in cogs:
             extention = f"moddy.cogs.{cog}"
             try:

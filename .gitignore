@@ -1,4 +1,4 @@
 .venv/
 __pycache__
 moddy/config.py
-data.py
+data.json

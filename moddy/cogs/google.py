@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from typing import Tuple
+from functools import lru_cache
+from typing import Tuple, Type
 
-import discord
 from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
-from moddy.embeds import ModdyEmbed, google_embed
-from moddy.utils import get_url
+from moddy.embeds import google_embed
+from moddy.utils import get_mention, get_url, log, reloadr
+
+reloadr()
 
 
 class Google(commands.Cog):
@@ -15,34 +17,37 @@ class Google(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def scrape_data(self, data) -> Tuple[str, str, str]:  # type: ignore[return]
+    @lru_cache(maxsize=50)
+    def scrape_data(self, data) -> Tuple[str, str, str, str]:
         soup = BeautifulSoup(data, "lxml")
         answer_selectors = {
-            ".XDTKBd": None,  # main result
-            "div.wDYxhc:nth-child(2) > div > span > span": "",
-            # "": "",
-            ".kno-rdesc > span:nth-child(2)": None,  # sidebar result
-            "div.VwiC3b > span:last-child": "div.g > div > div > div > a",  # main paragraph
-            ".eKjLze > div > div > div > div:nth-child(2) > div > span": ".eKjLze > div > div > div > div > a",  # sometimes first search result somehow
-            "div.hlcw0c > div> div:nth-child(2) > div > div > div > span:last-child": None,  # wikipedia result
-            # "#rso > div > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > span": "",
-            "#rso > div > div:nth-child(2) > div > div > div > span": "#rso > div > div:nth-child(2) > div > div > a",  # normal search results
-            "div.hlcw0c:nth-child(3) > div > div:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > span": None,
-            "div.hlcw0c:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1)": None,
-            # ".g > div > div > div:nth-child(2) > span > span:last-child": None,
-            # "#rso > div > div > div > div:nth-child(2) > div > span"
+            "div.wDYxhc:nth-child(2) > div.IZ6rdc": "",  # main paragraph
+            ".Z0LcW": "",  # highlted result
+            ".XDTKBd": "",  # main result
+            ".hgKElc": ".yuRUbf > a",  # featured snippet
+            ".kno-rdesc > span:nth-child(2)": "",  # sidebar result
+            ".VwiC3b": ".yuRUbf > a",  # first result
         }
+
+        img_selectors = {"g-img.ivg-i": "data-lpage", "#dimg_46": "src"}
+
         for ans_selector, link_selector in answer_selectors.items():
             answer: Tag = soup.select_one(ans_selector)
-            if answer and answer.text not in ("", "·", None):
+            if answer and answer.text:
                 link: str = (
                     f'[Read More....]({soup.select_one(link_selector)["href"]})'
                     if link_selector
                     else ""
                 )
-                return answer.text, link, ans_selector
+                break
 
-        # return "Couldn't ", ""
+        for img_selector, source_attr in img_selectors.items():
+            img: Tag = soup.select_one(img_selector)
+            if img:
+                img_src = img.get(source_attr)
+                break
+
+        return answer.text, link, ans_selector, img_src
 
     def process_answer(self, answer: str) -> str:
         if not answer.endswith("..."):
@@ -57,28 +62,37 @@ class Google(commands.Cog):
     @commands.command("ggl")
     async def gwogle_search(self, ctx: commands.Context, *query):
         """The main function of the package that puts everything together"""
-
         data = await get_url(
             f"https://google.com/search?q={'+'.join(query)}", text=True
         )
         print(data, file=open("text.html", "w"))
-        raw_answer, link, _ = self.scrape_data(data)
+        raw_answer, link, selector, img = self.scrape_data(data)
+        log(
+            get_mention(ctx.author),
+            f'got an answer for question "{" ".join(query)}" with {selector}',
+        )
         answer = self.process_answer(raw_answer)
-        await ctx.send(embed=google_embed(" ".join(query), f"{answer}\n{link}"))
+        await ctx.send(
+            embed=google_embed(" ".join(query), f"{answer}\n{link}", img=img)
+        )
 
     @commands.command("google")
-    async def main(self, ctx: commands.Context, *query):
+    async def search(self, ctx: commands.Context, *query):
         """The main function of the package that puts everything together"""
 
         data = await get_url(
             f"https://google.com/search?q={'+'.join(query)}", text=True
         )
         print(data, file=open("text.html", "w"))
-        raw_answer, link, selector = self.scrape_data(data)
+        raw_answer, link, selector, _ = self.scrape_data(data)
         answer = self.process_answer(raw_answer)
         await ctx.send(
             embed=google_embed(" ".join(query), f"{answer}\n{link}\n`{selector}`")
         )
+
+    @search.error
+    async def foo(ctx: commands.Context, error: Type[commands.CommandError]):  # type: ignore[return]
+        log(get_mention(ctx.author), f"Caused the error {error}")
 
 
 def setup(bot):

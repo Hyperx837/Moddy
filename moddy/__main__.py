@@ -1,8 +1,5 @@
-from moddy.utils import log
 from moddy.bot import main
-import asyncio
-from moddy.utils import session
-
+from moddy.utils import log
 
 if __name__ == "__main__":
     try:
@@ -10,4 +7,3 @@ if __name__ == "__main__":
 
     except KeyboardInterrupt:
         log("Exiting....")
-        asyncio.run(session.close())

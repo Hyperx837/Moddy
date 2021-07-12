@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-import aiohttp
 import discord
 from discord.ext import commands
 from moddy.config import quizapi_token
 from moddy.embeds import ModdyEmbed
-from moddy.utils import log, numbers, user_mention
+from moddy.utils import get_mention, get_url, log, numbers, reloadr
 
 params = {"apiKey": quizapi_token, "limit": 1}
+
+reloadr()
 
 
 def parse_data(data: list):
@@ -20,15 +21,8 @@ def parse_data(data: list):
     correct_answer, *_ = (
         idx for idx, ans in enumerate(quiz["correct_answers"].values()) if ans == "true"
     )
+    # discord.Guild.
     return question, answers_formatted, correct_answer
-
-
-async def get_quiz():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-            "https://quizapi.io/api/v1/questions", params=params
-        ) as response:
-            return await response.json()
 
 
 class Quiz(commands.Cog):
@@ -39,8 +33,10 @@ class Quiz(commands.Cog):
 
     @commands.command(name="quiz")
     async def send_quiz(self, ctx: commands.Context):
-        user_mention(ctx.author, f"Requested a quiz with {ctx.message.content}")
-        json_data = await get_quiz()
+        log(get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}")
+        json_data = await get_url(
+            "https://quizapi.io/api/v1/questions", params=params, json=True
+        )
         question, answers, correct_answer = parse_data(json_data)
         msg: discord.Message = await ctx.send(
             embed=ModdyEmbed(title=question, description=answers)
@@ -52,22 +48,24 @@ class Quiz(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        if user.id == self.bot.user.id or self.quiz_id != reaction.message.id:
+        msg: discord.Message = reaction.message
+        emoji: discord.Emoji = reaction.emoji
+        if user == self.bot.user or self.bot.user != msg.author:
             return
 
-        user_mention(
-            user, f'reacted to question "{reaction.message.id}" with a {reaction.emoji}'
+        log(
+            f'question "{msg.content[:20]}..." was reacted {emoji} by user "{get_mention(user)}'
         )
-        log(reaction.emoji)
-        log(f"Guild: {reaction.message.guild} | Channel: {reaction.message.channel}")
-        given_answer = numbers.index(reaction.emoji)
-        msg = (
+        log(emoji)
+        log(f"Guild: {msg.guild} | Channel: {msg.channel}")
+        given_answer = numbers.index(emoji)
+        result = (
             "I knew that you were the only one who was going to get it the first time"
             if given_answer == self.correct_answer
             else "I had told my friend that you might cause a nexus event if you get it right the first time"
         )
-        await user.send(msg)
-        await reaction.message.remove_reaction(reaction.emoji, user)
+        await user.send(result)
+        await msg.remove_reaction(reaction.emoji, user)
 
 
 def setup(bot):

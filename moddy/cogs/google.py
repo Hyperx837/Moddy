@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import asyncio
 from functools import lru_cache
 from typing import Optional, Tuple
 
@@ -66,18 +67,29 @@ class Google(commands.Cog):
 
         return ". ".join(sentences)
 
-    @commands.command("ggl")
-    async def gwogle_search(self, ctx: commands.Context, *query):
-        """The main function of the package that puts everything together"""
+    async def search_google(self, query):
         data = await get_url(
             f"https://google.com/search?q={'+'.join(query)}", text=True
         )
         print(data, file=open("text.html", "w"))
 
         answer, img = self.scrape_data(data)
-        log(get_mention(ctx.author), f'got an answer for question "{" ".join(query)}"')
 
-        await ctx.send(embed=google_embed(" ".join(query), answer, img=img))
+        await self.send_message(embed=google_embed(query, answer, img=img))
+
+    @commands.command("ggl")
+    async def handle_query(self, ctx: commands.Context, *search_terms):
+        """The main function of the package that puts everything together"""
+        self.send_message = ctx.send
+        queries = " ".join(search_terms)
+        query_list = queries.split(" | ")
+        await asyncio.gather(*[self.search_google(query) for query in query_list])
+        # for query in query_list:
+        #     await self.search_google(query)
+        #     log(
+        #         get_mention(ctx.author),
+        #         f'got an answer for question "{" ".join(query)}"',
+        #     )
 
 
 def setup(bot):

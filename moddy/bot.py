@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import importlib
+
 from discord.ext import commands
 
-from moddy.config import discordbot_token
+from moddy import config
+from moddy.config import cogs, discordbot_token
 from moddy.utils import log
+
+# if config.
 
 
 class Bot(commands.Bot):
@@ -11,13 +16,12 @@ class Bot(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned_or("."), **kwargs)
         self.load_cogs()
 
-    def load_cogs(self, *, mode="load"):
-        from moddy.config import cogs
-
+    def load_cogs(self, *, reload=False):
+        importlib.reload(config)
         for cog in cogs:
             extention = f"moddy.cogs.{cog}"
             try:
-                if mode == "reload":
+                if reload:
                     self.reload_extension(extention)
                 else:
                     self.load_extension(extention)

@@ -4,10 +4,8 @@ import aiohttp
 from aiohttp import ClientResponse
 from rich.console import Console
 
-console = Console()
+log = Console().log
 
-def log(*args, **kwargs):
-    console.log(*args, **kwargs)
 
 async def get_url(
     url, *args, json=False, text=False, **kwargs

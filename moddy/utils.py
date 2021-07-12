@@ -5,7 +5,13 @@ import aiohttp
 from aiohttp import ClientResponse
 from rich.console import Console
 
+import discord
+
 log: Callable = Console().log
+
+
+def get_mention(user: discord.Member):
+    return f"[{user.color}]@{user.display_name}[/{user.color}]"
 
 
 headers = {

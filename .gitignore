@@ -3,4 +3,4 @@ __pycache__
 moddy/config.py
 data.json
 ideas.txt
-text.html
+*.html

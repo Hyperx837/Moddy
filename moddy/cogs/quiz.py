@@ -3,11 +3,11 @@ import asyncio
 
 import discord
 from discord.ext import commands
-from moddy.config import quizapi_token
+from moddy.config import api_tokens
 from moddy.embeds import ModdyEmbed
 from moddy.utils import get_mention, get_url, log, numbers, reloadr
 
-params = {"apiKey": quizapi_token, "limit": 1}
+params = {"apiKey": api_tokens["quiz"], "limit": 1}
 
 reloadr()
 

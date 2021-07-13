@@ -5,7 +5,7 @@ import importlib
 from discord.ext import commands
 
 from moddy import config
-from moddy.config import cogs, discordbot_token
+# from moddy.config import cogs, api_tokens
 from moddy.utils import log
 
 # if config.
@@ -18,7 +18,7 @@ class Bot(commands.Bot):
 
     def load_cogs(self, *, reload=False):
         importlib.reload(config)
-        for cog in cogs:
+        for cog in config.cogs:
             extention = f"moddy.cogs.{cog}"
             try:
                 if reload:
@@ -47,4 +47,4 @@ class Bot(commands.Bot):
 
 def main():
     bot = Bot()
-    bot.run(discordbot_token)
+    bot.run(config.api_tokens["discord"])

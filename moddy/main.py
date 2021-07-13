@@ -1,9 +1,6 @@
-
-import aiohttp
-
 from .bot import DiscordBot
-from .database.db_utils import client
-from .utils import event_loop, headers, share_data
+from .database.database import client
+from .utils import event_loop, session, share_data
 
 
 class Moddity:
@@ -12,7 +9,7 @@ class Moddity:
         self.bot = DiscordBot()
         self.bot.load_cogs()
         self.db = client
-        self.http = aiohttp.ClientSession(headers=headers)
+        self.http = session
         share_data(self)
 
     async def start(self) -> None:

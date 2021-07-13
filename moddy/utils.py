@@ -1,12 +1,22 @@
 import importlib
 from typing import Callable, Union
 
-import aiohttp
+import asyncio
+import moddy.main
 import discord
 from aiohttp import ClientResponse
 from rich.console import Console
 
 log: Callable = Console().log
+
+event_loop = asyncio.get_event_loop()
+
+moddity = None
+
+
+def share_data(moddity_instance):
+    global moddity
+    moddity: moddy.main.Moddity = moddity_instance
 
 
 def get_mention(user: discord.Member):
@@ -44,15 +54,14 @@ async def get_url(
     url, *args, json=False, text=False, **kwargs
 ) -> Union[ClientResponse, dict, str]:
     print(url)
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, *args, **kwargs) as response:
-            if json:
-                return await response.json()
+    async with moddity.http.get(url, headers=headers, *args, **kwargs) as response:
+        if json:
+            return await response.json()
 
-            elif text:
-                return await response.text()
+        elif text:
+            return await response.text()
 
-            return response
+        return response
 
 
 numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"]

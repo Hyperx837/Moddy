@@ -3,9 +3,13 @@
 
 from discord.ext import commands
 from moddy.embeds import ModdyEmbed, command_not_allowed, reload_embed
-from moddy.utils import benchmark, log, reloadr, timer
+from moddy.utils import log, reloadr
 
 reloadr()
+
+
+def timer(arg):
+    pass
 
 
 class General(commands.Cog):

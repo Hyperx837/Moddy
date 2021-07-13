@@ -2,10 +2,9 @@ import importlib
 from typing import Callable, Union
 
 import aiohttp
+import discord
 from aiohttp import ClientResponse
 from rich.console import Console
-
-import discord
 
 log: Callable = Console().log
 
@@ -26,6 +25,12 @@ headers = {
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
 }
+
+
+def remove_prefix(string, prefix):
+    if string.startswith(prefix):
+        string = string[len(prefix) :]
+    return string
 
 
 def reloadr():

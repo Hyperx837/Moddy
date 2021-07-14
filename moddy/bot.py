@@ -1,19 +1,15 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import importlib
 
 from discord.ext import commands
 
 from moddy import config
-# from moddy.config import cogs, api_tokens
 from moddy.utils import log
 
-# if config.
 
-
-class Bot(commands.Bot):
-    def __init__(self, **kwargs):
+class DiscordBot(commands.Bot):
+    def __init__(self, db, **kwargs):
         super().__init__(command_prefix=commands.when_mentioned_or("."), **kwargs)
+        self.db = db
         self.load_cogs()
 
     def load_cogs(self, *, reload=False):
@@ -40,11 +36,3 @@ class Bot(commands.Bot):
         if self.is_connected:
             log("[red]Connection closed with discord websocket")
             self.is_connected = False
-
-
-# write general commands here
-
-
-def main():
-    bot = Bot()
-    bot.run(config.api_tokens["discord"])

@@ -4,68 +4,82 @@ import aiohttp
 import pymongo
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
-from moddy.utils import remove_prefix
-from motor.motor_asyncio import AsyncIOMotorCollection
-from rich.console import Console
+from moddy.utils import log, remove_prefix  # noqa: F401
+
+from .database import database as db
 
 loop = asyncio.get_event_loop()
-console = Console()
+
+quiz_coll = db.quiz
+languages = ["python", "javascript"]
 
 
-async def scrape():
-    collection: AsyncIOMotorCollection = db["quiz"]
-    await collection.create_index([("id", pymongo.ASCENDING)], unique=True)
-    url = "https://www.tutorialspoint.com/python/python_online_quiz.htm"
+async def get_quiz(language: str) -> BeautifulSoup:
+    url = f"https://www.tutorialspoint.com/{language}/{language}_online_quiz.htm"
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             html = await response.text()
-    soup = BeautifulSoup(html, "lxml")
+    return BeautifulSoup(html, "lxml")
 
-    quizes = soup.select(".QA")
+
+async def quiz_html2json(lang, quiz):
+    question: Tag = quiz.select_one(".Q")
+    id: str = question.get("id")
+    found = await quiz_coll.find_one({"id": id, "language": lang})
+    ptags: ResultSet[Tag] = question.find_all(recursive=False)
+
+    if found or 4 < len(ptags) > 6 or ptags[1].name not in ("pre", "p", "div"):
+        log(quiz)
+        return
+
+    answers = question.select("p a")
+    answer_dict = {}
+    for answer in answers:
+        letter, answer_text = answer.text.split(" - ")
+        answer_dict[letter] = answer_text
+
+    if len(ptags) == 6:
+        code = ptags[1].text
+
+    else:
+        code = None
+
+    title = remove_prefix(ptags[0].find(text=True, recursive=False), " - ")
+    correct_answer = question.select_one("p .true span").text
+    expla = quiz.select_one(".A p")
+
+    schema = {
+        "id": id,
+        "language": lang,
+        "title": title,
+        "code": code,
+        "answers": answer_dict,
+        "correct_answer": correct_answer,
+        "explanation": expla and expla.text,
+    }
+
+    asyncio.create_task(insert_doc(schema))
+
+
+async def scrape(lang: str):
+    soup = await get_quiz(lang)
+    quizes = soup.select(".QA")  # select div with QA class
     for quiz in quizes:
-        question: Tag = quiz.select_one(".Q")
-        id = question.get("id")
-        found = await collection.find_one({"id": id})
-        if found:
-            continue
-        answers = question.select("p a")
-        answer_dict = {}
-        for answer in answers:
-            letter, answer_text = answer.text.split(" - ")
-            answer_dict[letter] = answer_text
+        asyncio.create_task(quiz_html2json(lang, quiz))
 
-        ptags: ResultSet[Tag] = question.find_all(recursive=False)
-        if len(ptags) > 6:
-            continue
-        if len(ptags) == 6:
-            if ptags[1].name not in ("pre", "p"):
-                continue
-            code = ptags[1].text
-        else:
-            code = None
 
-        expla = quiz.select_one(".A p")
-        quiz_data = {
-            "id": id,
-            "language": "python",
-            "title": remove_prefix(ptags[0].find(text=True, recursive=False), " - "),
-            "code": code,
-            "answers": answer_dict,
-            "correct_answer": question.select_one("p .true span").text,
-            "explanation": expla and expla.text,
-        }
-        try:
-            await collection.insert_one(quiz_data)
-            console.print(quiz_data)
+async def insert_doc(doc: dict):
+    try:
+        await quiz_coll.insert_one(doc)
 
-        except pymongo.errors.DuplicationError:
-            pass
+    except pymongo.errors.DuplicationError:
+        pass
 
 
 async def main():
-    await scrape()
-    for _ in range(20):
-        await asyncio.gather(*[scrape() for _ in range(6)])
+    for language in languages:
+        for _ in range(120):
+            await scrape(language)
 
 
 if __name__ == "__main__":

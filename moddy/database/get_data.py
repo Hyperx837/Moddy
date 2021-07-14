@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 import aiohttp
 import pymongo
@@ -7,21 +6,10 @@ from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 from moddy.utils import remove_prefix
 from motor.motor_asyncio import AsyncIOMotorCollection
-from pydantic import BaseModel
 from rich.console import Console
 
 loop = asyncio.get_event_loop()
 console = Console()
-
-
-
-class Question(BaseModel):
-    id: str
-    title: str
-    code: Optional[str]
-    answers: dict
-    correct_answer: str
-    explanation: str
 
 
 async def scrape():

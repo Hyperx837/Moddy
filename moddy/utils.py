@@ -2,14 +2,16 @@ import asyncio
 import importlib
 from typing import Union
 
-import aiohttp
 import discord
 from aiohttp import ClientResponse
 from rich.console import Console
 
+import moddy.main
 
 event_loop = asyncio.get_event_loop()
 console = Console()
+numbers = {"A": "1️⃣", "B": "2️⃣", "C": "3️⃣", "D": "4️⃣"}
+languages = ["python", "javascript"]
 headers = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -22,7 +24,7 @@ headers = {
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
 }
-session = aiohttp.ClientSession(headers=headers)
+session = moddy.main.moddity.http
 
 
 def log(*args, **kwargs):
@@ -58,6 +60,3 @@ async def get_url(
             return await response.text()
 
         return response
-
-
-numbers = {"A": "1️⃣", "B": "2️⃣", "C": "3️⃣", "D": "4️⃣"}

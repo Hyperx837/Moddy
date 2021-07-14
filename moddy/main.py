@@ -11,7 +11,6 @@ class Moddity:
         self.http = session
         self.bot = DiscordBot(self.db)
         self.discordbot_token = api_tokens["discord"]
-        self.bot.load_cogs()
 
     async def start(self) -> None:
         try:

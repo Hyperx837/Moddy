@@ -1,28 +1,15 @@
-import importlib
-from typing import Callable, Union
-
 import asyncio
-import moddy.main
+import importlib
+from typing import Union
+
+import aiohttp
 import discord
 from aiohttp import ClientResponse
 from rich.console import Console
 
-log: Callable = Console().log
 
 event_loop = asyncio.get_event_loop()
-
-moddity = None
-
-
-def share_data(moddity_instance):
-    global moddity
-    moddity: moddy.main.Moddity = moddity_instance
-
-
-def get_mention(user: discord.Member):
-    return f"[{user.color}]@{user.display_name}[/{user.color}]"
-
-
+console = Console()
 headers = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -35,6 +22,15 @@ headers = {
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
 }
+session = aiohttp.ClientSession(headers=headers)
+
+
+def log(*args, **kwargs):
+    console.log(*args, **kwargs)
+
+
+def get_mention(user: discord.Member):
+    return f"[{user.color}]@{user.display_name}[/{user.color}]"
 
 
 def remove_prefix(string, prefix):
@@ -54,7 +50,7 @@ async def get_url(
     url, *args, json=False, text=False, **kwargs
 ) -> Union[ClientResponse, dict, str]:
     print(url)
-    async with moddity.http.get(url, headers=headers, *args, **kwargs) as response:
+    async with session.get(url, headers=headers, *args, **kwargs) as response:
         if json:
             return await response.json()
 
@@ -64,4 +60,4 @@ async def get_url(
         return response
 
 
-numbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"]
+numbers = {"A": "1️⃣", "B": "2️⃣", "C": "3️⃣", "D": "4️⃣"}

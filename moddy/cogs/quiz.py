@@ -2,68 +2,72 @@
 import asyncio
 
 import discord
+import moddy.bot
 from discord.ext import commands
 from moddy.config import api_tokens
 from moddy.embeds import ModdyEmbed
-from moddy.utils import get_mention, get_url, log, numbers, reloadr
+from moddy.utils import get_mention, log, numbers, reloadr
+from motor.motor_asyncio import AsyncIOMotorCollection
 
-params = {"apiKey": api_tokens["quiz"], "limit": 1}
 
 reloadr()
-
-
-def parse_data(data: list):
-    quiz: dict = data[0]
-    area = quiz["tags"][0]["name"]
-    question: str = f"{quiz['question']} ({area})"
-    answers = enumerate((ans for ans in quiz["answers"].values() if ans), 1)
-    answers_formatted: str = "\n".join(f"{idx}. {ans}" for idx, ans in answers)
-    correct_answer, *_ = (
-        idx for idx, ans in enumerate(quiz["correct_answers"].values()) if ans == "true"
-    )
-    # discord.Guild.
-    return question, answers_formatted, correct_answer
 
 
 class Quiz(commands.Cog):
     """The description for Quiz goes here."""
 
     def __init__(self, bot):
-        self.bot: commands.Bot = bot
+        self.bot: moddy.bot.DiscordBot = bot
+
+    async def get_question(self):
+        quiz_coll: AsyncIOMotorCollection = self.bot.db.quiz  # gets quiz collection
+        (self.question,) = [
+            doc async for doc in quiz_coll.aggregate([{"$sample": {"size": 1}}])
+        ]  # get random question from db
 
     @commands.command(name="quiz")
-    async def send_quiz(self, ctx: commands.Context):
+    async def quiz(self, ctx: commands.Context):
         log(get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}")
-        json_data = await get_url(
-            "https://quizapi.io/api/v1/questions", params=params, json=True
-        )
-        question, answers, correct_answer = parse_data(json_data)
+        await self.get_question()
+        title, answers = self.parse_data()
         msg: discord.Message = await ctx.send(
-            embed=ModdyEmbed(title=question, description=answers)
+            embed=ModdyEmbed(title=title, description=answers)
         )
-        self.quiz_id = msg.id
-        self.correct_answer = correct_answer
-        answer_count = answers.count("\n") + 1
-        asyncio.gather(*(msg.add_reaction(num) for num in numbers[:answer_count]))
+        await asyncio.gather(*(msg.add_reaction(num) for num in numbers.values()))
+
+    def parse_data(self):
+        ques = self.question
+        answers = "\n".join(
+            f"{i}. {ans}" for i, ans in enumerate(ques["answers"].values(), 1)
+        )
+        code: str = ques["code"]
+        if code:
+            if code.count("\n") > 1:
+                answers = f"```py\n{code}```\n{answers}"
+            else:
+                answers = f"`{code}`\n{answers}"
+        return ques["title"], answers
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         msg: discord.Message = reaction.message
         emoji: discord.Emoji = reaction.emoji
+        # if bot was the one to react to the message or reaction was added to another message
         if user == self.bot.user or self.bot.user != msg.author:
             return
 
         log(
             f'question "{msg.content[:20]}..." was reacted {emoji} by user "{get_mention(user)}'
         )
-        log(emoji)
         log(f"Guild: {msg.guild} | Channel: {msg.channel}")
-        given_answer = numbers.index(emoji)
+        correct_answer = self.question["correct_answer"]
+        correct_reaction = numbers[correct_answer]
         result = (
             "I knew that you were the only one who was going to get it the first time"
-            if given_answer == self.correct_answer
+            if emoji == correct_reaction
             else "I had told my friend that you might cause a nexus event if you get it right the first time"
         )
+
         await user.send(result)
         await msg.remove_reaction(reaction.emoji, user)
 

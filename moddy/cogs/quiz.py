@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+
 import asyncio
+import random
 
 import discord
 import moddy.bot
 from discord.ext import commands
+from moddy.database.get_data import scrape
 from moddy.embeds import ModdyEmbed
-from moddy.utils import get_mention, log, numbers, reloadr
+from moddy.utils import get_mention, languages, log, numbers, reloadr
 from motor.motor_asyncio import AsyncIOMotorCollection
-
 
 reloadr()
 
@@ -18,16 +20,20 @@ class Quiz(commands.Cog):
     def __init__(self, bot):
         self.bot: moddy.bot.DiscordBot = bot
 
-    async def get_question(self):
+    async def get_question(self, language):
         quiz_coll: AsyncIOMotorCollection = self.bot.db.quiz  # gets quiz collection
+        lang = language or random.choice(languages)
         (self.question,) = [
-            doc async for doc in quiz_coll.aggregate([{"$sample": {"size": 1}}])
+            doc
+            async for doc in quiz_coll.aggregate(
+                [{"$match": {"language": lang}}, {"$sample": {"size": 1}}]
+            )
         ]  # get random question from db
 
     @commands.command(name="quiz")
-    async def quiz(self, ctx: commands.Context):
+    async def quiz(self, ctx: commands.Context, lang: str = ""):
         log(get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}")
-        await self.get_question()
+        await self.get_question(lang)
         title, answers = self.parse_data()
         msg: discord.Message = await ctx.send(
             embed=ModdyEmbed(title=title, description=answers)
@@ -45,7 +51,8 @@ class Quiz(commands.Cog):
                 answers = f"```py\n{code}```\n{answers}"
             else:
                 answers = f"`{code}`\n{answers}"
-        return ques["title"], answers
+        question = f"{ques['title']} ({ques['language']})"  # question with language
+        return question, answers
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
@@ -69,6 +76,12 @@ class Quiz(commands.Cog):
 
         await user.send(result)
         await msg.remove_reaction(reaction.emoji, user)
+
+    @commands.command("new-quizes")
+    @commands.is_owner()
+    async def download_quizes(self, ctx: commands.Context, lang: str, limit: int):
+        for _ in range(limit):
+            await scrape(lang)
 
 
 def setup(bot):

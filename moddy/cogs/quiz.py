@@ -4,7 +4,6 @@ import asyncio
 import discord
 import moddy.bot
 from discord.ext import commands
-from moddy.config import api_tokens
 from moddy.embeds import ModdyEmbed
 from moddy.utils import get_mention, log, numbers, reloadr
 from motor.motor_asyncio import AsyncIOMotorCollection

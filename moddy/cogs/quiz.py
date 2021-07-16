@@ -7,8 +7,8 @@ import discord
 import moddy.bot
 from discord.ext import commands
 from moddy.database.get_data import scrape
-from moddy.embeds import ModdyEmbed
-from moddy.utils import get_mention, languages, log, numbers, reloadr
+from moddy.embeds import ModdyEmbed, ModdySuccess
+from moddy.utils import benchmark, get_mention, languages, log, numbers, reloadr
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 reloadr()
@@ -19,6 +19,8 @@ class Quiz(commands.Cog):
 
     def __init__(self, bot):
         self.bot: moddy.bot.DiscordBot = bot
+        self.question = None
+        self.questions: dict = {}
 
     async def get_question(self, language):
         quiz_coll: AsyncIOMotorCollection = self.bot.db.quiz  # gets quiz collection
@@ -29,16 +31,6 @@ class Quiz(commands.Cog):
                 [{"$match": {"language": lang}}, {"$sample": {"size": 1}}]
             )
         ]  # get random question from db
-
-    @commands.command(name="quiz")
-    async def quiz(self, ctx: commands.Context, lang: str = ""):
-        log(get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}")
-        await self.get_question(lang)
-        title, answers = self.parse_data()
-        msg: discord.Message = await ctx.send(
-            embed=ModdyEmbed(title=title, description=answers)
-        )
-        await asyncio.gather(*(msg.add_reaction(num) for num in numbers.values()))
 
     def parse_data(self):
         ques = self.question
@@ -54,6 +46,17 @@ class Quiz(commands.Cog):
         question = f"{ques['title']} ({ques['language']})"  # question with language
         return question, answers
 
+    @commands.command(name="quiz")
+    async def quiz(self, ctx: commands.Context, lang: str = ""):
+        log(get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}")
+        await self.get_question(lang)
+        title, answers = self.parse_data()
+        msg: discord.Message = await ctx.send(
+            embed=ModdyEmbed(title=title, description=answers)
+        )
+        self.questions[msg.id] = self.question
+        await asyncio.gather(*(msg.add_reaction(num) for num in numbers.values()))
+
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         msg: discord.Message = reaction.message
@@ -66,6 +69,7 @@ class Quiz(commands.Cog):
             f'question "{msg.content[:20]}..." was reacted {emoji} by user "{get_mention(user)}'
         )
         log(f"Guild: {msg.guild} | Channel: {msg.channel}")
+        self.question = self.questions[msg.id]
         correct_answer = self.question["correct_answer"]
         correct_reaction = numbers[correct_answer]
         result = (
@@ -80,8 +84,14 @@ class Quiz(commands.Cog):
     @commands.command("new-quizes")
     @commands.is_owner()
     async def download_quizes(self, ctx: commands.Context, lang: str, limit: int):
-        for _ in range(limit):
-            await scrape(lang)
+        await ctx.send(embed=ModdyEmbed("Starting Operation ✨ ... "))
+        with benchmark() as timer:
+            for _ in range(limit):
+                await scrape(lang)
+
+        title = "Operation Successful 🚀 ..."
+        desc = f'Successfully pushed {limit} quizes about "{lang}" in {timer.elapsed}s.'
+        await ctx.send(embed=ModdySuccess(title, desc))
 
 
 def setup(bot):

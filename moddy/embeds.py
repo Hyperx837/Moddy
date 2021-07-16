@@ -1,8 +1,10 @@
 import random
 
 import discord
+from dataclasses import dataclass
 
 
+@dataclass
 class ModdyEmbed(discord.Embed):
     def __init__(self, title: str, description: str = "", **kwargs):
         super().__init__(**kwargs)
@@ -39,8 +41,10 @@ def command_not_allowed(command: str, permission: str) -> ModdyEmbed:
     return ModdyError(title, desc)
 
 
-def provide_value(command):
-    pass
+provide_query = ModdyError(
+    "How the hell will you expect a result without a query?",
+    "Please provide a query to get results",
+)
 
 
 reload_embed = ModdyEmbed("Bot successfully reloaded 🦾")

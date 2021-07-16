@@ -2,10 +2,11 @@
 
 import asyncio
 from typing import Optional, Tuple
+from urllib import parse
 
 from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
-from moddy.embeds import google_embed
+from moddy.embeds import google_embed, provide_query
 from moddy.utils import get_mention, get_url, log, reloadr
 
 reloadr()
@@ -42,7 +43,6 @@ class Google(commands.Cog):
         for img_selector, source_attr in self.img_selectors.items():
             img: Tag = self.soup.select_one(img_selector)
             if img:
-                print(img)
                 return img.get(source_attr)
         return None
 
@@ -74,9 +74,8 @@ class Google(commands.Cog):
         return answer, img_src
 
     async def search_google(self, query):
-        data = await get_url(f"https://google.com/search?q={query}", text=True)
-        print(data, file=open("text.html", "w"))
-
+        escaped_query = parse.quote(query)
+        data = await get_url(f"https://google.com/search?q={escaped_query}", text=True)
         answer, img = self.scrape_data(data)
 
         await self.send_message(embed=google_embed(query, answer, img=img))
@@ -84,11 +83,13 @@ class Google(commands.Cog):
     @commands.command("ggl")
     async def handle_query(self, ctx: commands.Context, *keywords):
         """The main function of the package that puts everything together"""
+        if not keywords:
+            await ctx.send(embed=provide_query)
+            return
         self.send_message = ctx.send
         search_term = " ".join(keywords)
         self.search_term = search_term
         queries = search_term.split(" | ")
-        print("+".join("- | -"))
         await asyncio.gather(*[self.search_google(query) for query in queries])
 
         log(

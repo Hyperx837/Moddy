@@ -12,15 +12,22 @@ class ModdyEmbed(discord.Embed):
 
 
 class ModdyError(ModdyEmbed):
-    def __init__(self, title: str, description: str, **kwargs):
-        super().__init__(title, description, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.color = 0x8F003C
 
 
 class ModdySuccess(ModdyEmbed):
-    def __init__(self, title: str, description: str, **kwargs):
-        super().__init__(title, description=description, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.color = 0x7DEB34
+
+
+def ping_embed(latency: int, elapsed: int):
+    return ModdySuccess(
+        "Pong 🏓 !!",
+        f"latency: {round(latency * 1000, 3)}ms\nAPI: {elapsed}s",
+    )
 
 
 def command_not_allowed(command: str, permission: str) -> ModdyEmbed:
@@ -51,7 +58,6 @@ def google_embed(query: str, answer: str, *, img=None) -> ModdyEmbed:
     ]
     title = random.choice(phrases)
     embed = ModdyEmbed(title, f'**Results for "{query}"**\n\n{answer}')
-    print(img)
     if img:
         embed.set_thumbnail(url=img)
     # embed.set

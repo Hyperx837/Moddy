@@ -1,14 +1,19 @@
+import asyncio
+import sys
+
+import aiohttp
+
 from .bot import DiscordBot
-from .database.database import database
-from .utils import event_loop, session
 from .config import api_tokens
+from .database.database import database
+from .utils import log
 
 
 class Moddity:
     def __init__(self) -> None:
-        self.loop = event_loop
+        self.loop = asyncio.get_event_loop()
         self.db = database
-        self.http = session
+        self.http = aiohttp.ClientSession()
         self.bot = DiscordBot(self.db)
         self.discordbot_token = api_tokens["discord"]
 
@@ -34,6 +39,8 @@ class Moddity:
 
         except KeyboardInterrupt:
             self.loop.create_task(self.close())
+            sys.stdout.write("\b\b")
+            log("[bold cyan]Exiting... ")
 
 
 moddity = Moddity()

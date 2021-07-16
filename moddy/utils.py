@@ -1,5 +1,8 @@
 import asyncio
+import contextlib
 import importlib
+import time
+from dataclasses import dataclass
 from typing import Union
 
 import discord
@@ -24,7 +27,20 @@ headers = {
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
 }
-session = moddy.main.moddity.http
+
+
+@dataclass
+class Timer:
+    elapsed: int = 0
+
+
+@contextlib.contextmanager
+def benchmark():
+    timer = Timer()
+    start = time.perf_counter()
+    yield timer
+    finish = time.perf_counter()
+    timer.elapsed = round(finish - start, 2)
 
 
 def log(*args, **kwargs):
@@ -51,7 +67,7 @@ def reloadr():
 async def get_url(
     url, *args, json=False, text=False, **kwargs
 ) -> Union[ClientResponse, dict, str]:
-    print(url)
+    session = moddy.main.moddity.http
     async with session.get(url, headers=headers, *args, **kwargs) as response:
         if json:
             return await response.json()

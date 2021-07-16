@@ -1,8 +1,8 @@
 import importlib
+import os
 
 from discord.ext import commands
 
-from moddy import config
 from moddy.utils import log
 
 
@@ -12,20 +12,32 @@ class DiscordBot(commands.Bot):
         self.db = db
         self.load_cogs()
 
+    @property
+    def cogs(self):
+        cog_files = os.listdir("moddy/cogs/")
+        cog_modules = [
+            importlib.import_module(f"moddy.cogs.{cog_file.strip('.py')}")
+            for cog_file in cog_files
+            if cog_file.endswith(".py")
+        ]
+        glob_vals = []
+        for module in cog_modules:
+            glob_vals.extend(module.__dict__.values())
+
+        for val in glob_vals:
+            if isinstance(val, commands.CogMeta):
+                yield val
+
     def load_cogs(self, *, reload=False):
-        importlib.reload(config)
-        for cog in config.cogs:
-            extention = f"moddy.cogs.{cog}"
+        for cog in self.cogs:
             try:
                 if reload:
-                    self.reload_extension(extention)
-                else:
-                    self.load_extension(extention)
+                    self.remove_cog(cog.__name__)
+                self.add_cog(cog(self))
+
             except Exception as exc:
                 print(
-                    "Could not load extension {0} due to {1.__class__.__name__}: {1}".format(
-                        cog, exc
-                    )
+                    f"Could not load extension {cog.__name__} due to {exc.__class__.__name__}: {exc}"
                 )
 
     async def on_ready(self):

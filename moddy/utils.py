@@ -57,11 +57,12 @@ def remove_prefix(string, prefix):
     return string
 
 
-def reloadr():
+def reloadr(*modules):
     from moddy import embeds, utils
 
-    importlib.reload(utils)
-    importlib.reload(embeds)
+    modules = [embeds, utils, *modules]
+    for module in modules:
+        importlib.reload(module)
 
 
 async def get_url(

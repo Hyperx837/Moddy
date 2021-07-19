@@ -5,10 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Module",
+      "name": "Python: Attach",
       "type": "python",
-      "request": "launch",
-      "module": "moddy"
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      }
     }
   ]
 }

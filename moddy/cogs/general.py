@@ -17,11 +17,6 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot: commands.Bot = bot
 
-    #  @commands.command(name="clear")
-    #  @commands.is_owner()
-    #  async def clear_messages(self, ctx: commands.Context, amount: int = 0):
-    #     await ctx.channel.purge(limit=amount + 1)
-
     @commands.command(name="clear")
     async def clear_messages(self, ctx: commands.Context, amount: int = 0):
         if ctx.author.permissions_in(ctx.channel).manage_messages:

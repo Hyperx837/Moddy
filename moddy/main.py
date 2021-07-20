@@ -6,7 +6,7 @@ import aiohttp
 from .bot import DiscordBot
 from .config import api_tokens
 from .database.database import database
-from .utils import log
+from .utils import console
 
 
 class Moddity:
@@ -40,7 +40,7 @@ class Moddity:
         except KeyboardInterrupt:
             self.loop.create_task(self.close())
             sys.stdout.write("\b\b")
-            log("[bold cyan]Exiting... ")
+            console.log("[bold cyan]Exiting... ")
 
 
 moddity = Moddity()

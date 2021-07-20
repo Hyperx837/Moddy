@@ -10,7 +10,7 @@ from moddy import datastructures
 from moddy.database.get_data import scrape
 from moddy.datastructures import DictStack, Question
 from moddy.embeds import ModdyEmbed, ModdySuccess
-from moddy.utils import benchmark, get_mention, languages, log, numbers, reloadr
+from moddy.utils import benchmark, get_mention, languages, console, numbers, reloadr
 
 reloadr(datastructures)
 
@@ -20,7 +20,7 @@ class Quiz(commands.Cog):
 
     def __init__(self, bot):
         self.bot: moddy.bot.DiscordBot = bot
-        self.questions: DictStack = DictStack()
+        self.questions = DictStack()
 
     def parse_data(self, ques: Question):
         answers = "\n".join(
@@ -37,10 +37,13 @@ class Quiz(commands.Cog):
 
     @commands.command(name="quiz")
     async def quiz(self, ctx: commands.Context, lang: str = ""):
-        log(get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}")
+        console.log(
+            get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}"
+        )
         lang = lang or random.choice(languages)
         (question,) = await self.questions.random_questions({"language": lang}, 1)
         title, answers = self.parse_data(question)
+
         msg: discord.Message = await ctx.send(
             embed=ModdyEmbed(title=title, description=answers)
         )
@@ -50,11 +53,17 @@ class Quiz(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
-        channel: discord.TextChannel = self.bot.get_channel(payload.channel_id)
-        member: discord.Member = await channel.guild.fetch_member(payload.user_id)
-        msg: discord.Message = await channel.fetch_message(payload.message_id)
-        emoji: str = payload.emoji._as_reaction()
-        self.question: Question = await self.questions.getitem(msg.id)
+        channel = self.bot.get_channel(payload.channel_id)
+        member = await channel.guild.fetch_member(payload.user_id)
+        msg = await channel.fetch_message(payload.message_id)
+        emoji: str = payload.emoji._as_reaction()  # type: ignore
+        try:
+            self.question: Question = await self.questions.getitem(msg.id)
+
+        except KeyError:
+            console.log(
+                f"[bold red] failed to retrive question with id {msg.id} from db or database"
+            )
         # if bot was the one to react to the message or reaction was added to another message
         conds = (
             member == self.bot.user,
@@ -66,10 +75,10 @@ class Quiz(commands.Cog):
         asyncio.create_task(msg.remove_reaction(emoji, member))
         if self.question.has_answered(member):
             return
-        log(
+        console.log(
             f'question "{msg.embeds[0].title[:20]}..." was reacted {emoji} by user {get_mention(member)}'
         )
-        log(f"Guild: {msg.guild} | Channel: {msg.channel}")
+        console.log(f"Guild: {msg.guild} | Channel: {msg.channel}")
         self.question.answered_by(member)
         correct_answer = self.question.correct_answer
         correct_reaction = numbers[correct_answer]

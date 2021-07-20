@@ -29,6 +29,12 @@ headers = {
 }
 
 
+def limit(string: str, limit: int):
+    if len(string) > limit:
+        return f"{string[:limit]}..."
+    return string
+
+
 @dataclass
 class Timer:
     elapsed: int = 0
@@ -41,10 +47,6 @@ def benchmark():
     yield timer
     finish = time.perf_counter()
     timer.elapsed = round(finish - start, 2)
-
-
-def log(*args, **kwargs):
-    console.log(*args, **kwargs)
 
 
 def get_mention(user: discord.Member):

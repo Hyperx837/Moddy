@@ -2,7 +2,7 @@ import os
 
 from discord.ext import commands
 
-from moddy.utils import log
+from .utils import console
 
 
 class DiscordBot(commands.Bot):
@@ -31,12 +31,10 @@ class DiscordBot(commands.Bot):
         #         yield val
 
     def load_cogs(self, *, reload=False):
+        loader = self.reload_extension if reload else self.load_extension
         for cog in self.cogs:
             try:
-                if reload:
-                    self.reload_extension(cog)
-                else:
-                    self.load_extension(cog)
+                loader(cog)
 
             except Exception as exc:
                 print(
@@ -44,10 +42,10 @@ class DiscordBot(commands.Bot):
                 )
 
     async def on_ready(self):
-        log("Logged on as {0} (ID: {0.id})".format(self.user))
+        console.log("Logged on as {0} (ID: {0.id})".format(self.user))
         self.is_connected = True
 
     async def on_disconnect(self):
         if self.is_connected:
-            log("[red]Connection closed with discord websocket")
+            console.log("[red]Connection closed with discord websocket")
             self.is_connected = False

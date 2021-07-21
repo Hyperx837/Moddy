@@ -1,9 +1,12 @@
+import asyncio
 from typing import Dict, Iterator, List
 
 import discord
 from typing_extensions import Literal
 
 from .database.database import QuizModel, database
+
+coll = database["message_mapper"]
 
 
 class Question(QuizModel):
@@ -15,13 +18,21 @@ class Question(QuizModel):
 
     def answered_by(self, author: discord.Member):
         self.answered_users.append(author)
+        asyncio.create_task(
+            coll.update_one(
+                {"id": self.id, "language": self.language},
+                {"$set": self.dict()},
+                upsert=False,
+            )
+        )
+
         print(author)
 
 
 class DictStack:
     def __init__(self) -> None:
         self._dict: Dict[int, Question] = {}
-        self.coll = database["message_mapper"]
+        self.coll = coll
 
     async def setitem(self, key, item) -> None:
         if not isinstance(key, int):
@@ -46,14 +57,7 @@ class DictStack:
 
     async def random_questions(self, filt: dict, amount: int) -> List[Question]:
         pipeline = [{"$match": filt}, {"$sample": {"size": amount}}]
-        # return [Question(**doc) async for doc in database.quiz.aggregate(pipeline)]
-        lst = []
-        async for doc in database.quiz.aggregate(pipeline):
-            lst.append(Question(**doc))
-            print(doc)
-        return lst
-
-        # yield Question(**doc)
+        return [Question(**doc) async for doc in database.quiz.aggregate(pipeline)]
 
     def __iter__(self) -> Iterator:
         return iter(self._dict)

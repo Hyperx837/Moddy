@@ -1,6 +1,7 @@
 import os
 
 from discord.ext import commands
+from discord.ext.commands.errors import ExtensionAlreadyLoaded
 
 from .utils import console
 
@@ -32,9 +33,13 @@ class DiscordBot(commands.Bot):
 
     def load_cogs(self, *, reload=False):
         loader = self.reload_extension if reload else self.load_extension
+
         for cog in self.cogs:
             try:
                 loader(cog)
+
+            except ExtensionAlreadyLoaded:
+                self.load_extension(cog)  # detect new cogs while reloading
 
             except Exception as exc:
                 print(

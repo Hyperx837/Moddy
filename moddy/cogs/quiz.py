@@ -10,7 +10,7 @@ from moddy import datastructures
 from moddy.database.get_data import scrape
 from moddy.datastructures import DictStack, Question
 from moddy.embeds import ModdyEmbed, ModdySuccess
-from moddy.utils import benchmark, get_mention, languages, console, numbers, reloadr
+from moddy.utils import benchmark, console, get_mention, languages, numbers, reloadr
 
 reloadr(datastructures)
 
@@ -57,20 +57,21 @@ class Quiz(commands.Cog):
         member = await channel.guild.fetch_member(payload.user_id)
         msg = await channel.fetch_message(payload.message_id)
         emoji: str = payload.emoji._as_reaction()  # type: ignore
-        try:
-            self.question: Question = await self.questions.getitem(msg.id)
-
-        except KeyError:
-            console.log(
-                f"[bold red] failed to retrive question with id {msg.id} from db or database"
-            )
-        # if bot was the one to react to the message or reaction was added to another message
         conds = (
             member == self.bot.user,
             self.bot.user != msg.author,
         )
         if any(conds):
             return
+        try:
+            self.question: Question = await self.questions.getitem(msg.id)
+
+        except KeyError:
+            console.log(
+                f"[bold red] failed to retrive question with id {msg.id} from cache or database"
+                f"\nUser: {get_mention(member)}"
+            )
+        # if bot was the one to react to the message or reaction was added to another message
 
         asyncio.create_task(msg.remove_reaction(emoji, member))
         if self.question.has_answered(member):

@@ -1,7 +1,7 @@
 import random
+from dataclasses import dataclass
 
 import discord
-from dataclasses import dataclass
 
 
 @dataclass
@@ -23,6 +23,12 @@ class ModdySuccess(ModdyEmbed):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = 0x7DEB34
+
+
+class ModdyWarning(ModdyEmbed):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.color = 0xD1CA3B
 
 
 def ping_embed(latency: int, elapsed: int):

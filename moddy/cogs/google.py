@@ -4,10 +4,13 @@ import asyncio
 from typing import Optional, Tuple
 from urllib import parse
 
+import discord
+import moddy.bot
 from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
+from moddy.config import bot_commands
 from moddy.embeds import google_embed, provide_query
-from moddy.utils import get_mention, get_url, log, reloadr
+from moddy.utils import console, get_mention, get_url, limit, reloadr
 
 reloadr()
 
@@ -15,8 +18,9 @@ reloadr()
 class Google(commands.Cog):
     """The description for Google goes here."""
 
-    def __init__(self, bot):
+    def __init__(self, bot: moddy.bot.DiscordBot):
         self.bot = bot
+        self.guilds = self.bot.guilds
         self.answer_selectors = {
             "div.wDYxhc:nth-child(2) > div.IZ6rdc": "",  # main paragraph
             ".Z0LcW": "",  # highlted result
@@ -76,6 +80,7 @@ class Google(commands.Cog):
     async def search_google(self, query):
         escaped_query = parse.quote(query)
         data = await get_url(f"https://google.com/search?q={escaped_query}", text=True)
+        print(data, file=open("text.html", "w"))
         answer, img = self.scrape_data(data)
 
         await self.send_message(embed=google_embed(query, answer, img=img))
@@ -86,13 +91,24 @@ class Google(commands.Cog):
         if not keywords:
             await ctx.send(embed=provide_query)
             return
-        self.send_message = ctx.send
+
         search_term = " ".join(keywords)
         self.search_term = search_term
+
+        if isinstance(ctx.channel, discord.DMChannel):
+            channel = self.bot.get_channel(bot_commands)
+            self.send_message = channel.send
+            await self.send_message(
+                f"{ctx.author.mention} requested results for {limit(search_term, 20)} in dm"
+            )
+
+        else:
+            self.send_message = ctx.send
+
         queries = search_term.split(" | ")
         await asyncio.gather(*[self.search_google(query) for query in queries])
 
-        log(
+        console.log(
             get_mention(ctx.author),
             f'reuqested results for "{search_term}" in #{ctx.channel}',
         )

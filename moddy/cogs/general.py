@@ -24,7 +24,6 @@ class General(commands.Cog):
 
         else:
             await ctx.send(embed=command_not_allowed("clear", "Manage messages"))
-            console.log(ctx.guild.id)
 
     @commands.command(name="reload")
     async def reload_cogs(self, ctx: commands.Context):

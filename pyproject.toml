@@ -15,6 +15,7 @@ lxml = "^4.6.3"
 rich = "^10.4.0"
 motor = "^2.4.0"
 pydantic = "^1.8.2"
+aiosocks = "^0.2.6"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"

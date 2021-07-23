@@ -1,4 +1,5 @@
 import asyncio
+from moddy.logger import logger
 
 import aiohttp
 import pymongo
@@ -29,7 +30,7 @@ async def quiz_html2json(lang, quiz):
     ptags: ResultSet[Tag] = question.find_all(recursive=False)
 
     if found or 4 < len(ptags) > 6 or ptags[1].name not in ("pre", "p", "div"):
-        console.log(id)
+        logger.info(id)
         return
 
     answers = question.select("p a")

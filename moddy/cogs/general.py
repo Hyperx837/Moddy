@@ -2,11 +2,12 @@
 
 
 import asyncio
+from moddy.logger import logger
 
 from discord.ext import commands
 from discord.message import Message
 from moddy.embeds import ModdyEmbed, command_not_allowed, ping_embed, reload_embed
-from moddy.utils import benchmark, console, reloadr
+from moddy.utils import benchmark, reloadr
 
 reloadr()
 
@@ -30,7 +31,7 @@ class General(commands.Cog):
         if await self.bot.is_owner(ctx.author):
             self.bot.load_cogs(reload=True)
             await ctx.send(embed=reload_embed)
-            console.log("[bold green]Cogs successfully reloaded")
+            logger.success("[bold green]Cogs successfully reloaded")
 
         else:
             await ctx.send(

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+from moddy.logger import logger
 from typing import Optional, Tuple
 from urllib import parse
 
@@ -10,7 +11,7 @@ from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
 from moddy.config import bot_commands
 from moddy.embeds import google_embed, provide_query
-from moddy.utils import console, get_mention, get_url, limit, reloadr
+from moddy.utils import get_mention, get_url, limit, reloadr
 
 reloadr()
 
@@ -108,7 +109,7 @@ class Google(commands.Cog):
         queries = search_term.split(" | ")
         await asyncio.gather(*[self.search_google(query) for query in queries])
 
-        console.log(
+        logger.info(
             get_mention(ctx.author),
             f'reuqested results for "{search_term}" in #{ctx.channel}',
         )

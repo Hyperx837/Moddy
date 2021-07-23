@@ -1,3 +1,4 @@
+from moddy.logger import logger
 from moddy.config import DB_NAME, MONGO_URL
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -12,7 +13,7 @@ try:
     client = AsyncIOMotorClient(MONGO_URL, io_loop=event_loop)
 
 except pymongo.errors.ServerSelectionTimeoutError:
-    console.log(
+    logger.error(
         "[bold red]Database Error: Connection time out. start or restart mongod.service"
     )
 database: AsyncIOMotorDatabase = client[DB_NAME]

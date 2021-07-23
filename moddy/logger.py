@@ -17,7 +17,7 @@ class Logger:
     def log(self, *args, **kwargs):
         self.console.log(*args, _stack_offset=2, **kwargs)
 
-    def succes(self, *args, **kwargs):
+    def success(self, *args, **kwargs):
         self.log(*args, style="success", **kwargs)
 
     def info(self, *args, **kwargs):

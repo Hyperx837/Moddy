@@ -10,7 +10,9 @@ from moddy import datastructures
 from moddy.database.get_data import scrape
 from moddy.datastructures import DictStack, Question
 from moddy.embeds import ModdyEmbed, ModdySuccess
-from moddy.utils import benchmark, console, get_mention, languages, numbers, reloadr
+from moddy.logger import logger
+from moddy.utils import (benchmark, get_mention, languages, numbers,
+                         reloadr)
 
 reloadr(datastructures)
 
@@ -37,7 +39,7 @@ class Quiz(commands.Cog):
 
     @commands.command(name="quiz")
     async def quiz(self, ctx: commands.Context, lang: str = ""):
-        console.log(
+        logger.info(
             get_mention(ctx.author), f"Requested a quiz with {ctx.message.content}"
         )
         lang = lang or random.choice(languages)
@@ -67,7 +69,7 @@ class Quiz(commands.Cog):
             self.question: Question = await self.questions.getitem(msg.id)
 
         except KeyError:
-            console.log(
+            logger.error(
                 f"[bold red] failed to retrive question with id {msg.id} from cache or database"
                 f"\nUser: {get_mention(member)}"
             )
@@ -76,10 +78,10 @@ class Quiz(commands.Cog):
         asyncio.create_task(msg.remove_reaction(emoji, member))
         if self.question.has_answered(member):
             return
-        console.log(
+        logger.info(
             f'question "{msg.embeds[0].title[:20]}..." was reacted {emoji} by user {get_mention(member)}'
+            f"Guild: {msg.guild} | Channel: {msg.channel}"
         )
-        console.log(f"Guild: {msg.guild} | Channel: {msg.channel}")
         self.question.answered_by(member)
         correct_answer = self.question.correct_answer
         correct_reaction = numbers[correct_answer]

@@ -18,12 +18,35 @@ yarl = ">=1.0,<2.0"
 speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
+name = "aiohttp-socks"
+version = "0.6.0"
+description = "Proxy connector for aiohttp"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+aiohttp = ">=2.3.2"
+attrs = ">=19.2.0"
+python-socks = {version = ">=1.2.2", extras = ["asyncio"]}
+
+[[package]]
 name = "aiosocks"
 version = "0.2.6"
 description = "SOCKS proxy client for asyncio and aiohttp"
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
+
+[package.dependencies]
+aiohttp = ">=3.4"
+
+[package.source]
+type = "git"
+url = "https://github.com/nibrag/aiosocks"
+reference = "master"
+resolved_reference = "d4a85e73c9e3beadd7ab4c46b8f3ceb3b57338b2"
 
 [[package]]
 name = "appdirs"
@@ -418,6 +441,22 @@ tls = ["ipaddress"]
 zstd = ["zstandard"]
 
 [[package]]
+name = "python-socks"
+version = "1.2.4"
+description = "Core proxy (SOCKS4, SOCKS5, HTTP tunneling) functionality for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+async-timeout = {version = ">=3.0.1", optional = true, markers = "extra == \"asyncio\""}
+
+[package.extras]
+asyncio = ["async-timeout (>=3.0.1)"]
+curio = ["curio (>=1.4)"]
+trio = ["trio (>=0.16.0)"]
+
+[[package]]
 name = "regex"
 version = "2021.7.6"
 description = "Alternative regular expression module, to replace re."
@@ -510,7 +549,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "4f7d94a07c67017ab528da45d9ea41314e8bd36ca4711c542fd31713a2a28a0b"
+content-hash = "fe85e09fb4de6f48dec9b01de315c77742eb51f48dbdf2b78937ee7b3d2a2a34"
 
 [metadata.files]
 aiohttp = [
@@ -552,9 +591,11 @@ aiohttp = [
     {file = "aiohttp-3.7.4.post0-cp39-cp39-win_amd64.whl", hash = "sha256:02f46fc0e3c5ac58b80d4d56eb0a7c7d97fcef69ace9326289fb9f1955e65cfe"},
     {file = "aiohttp-3.7.4.post0.tar.gz", hash = "sha256:493d3299ebe5f5a7c66b9819eacdcfbbaaf1a8e84911ddffcdc48888497afecf"},
 ]
-aiosocks = [
-    {file = "aiosocks-0.2.6.tar.gz", hash = "sha256:94dfb2c3ff2fc646c88629e29872599cc93d9137c2eace68dc89079e6a221277"},
+aiohttp-socks = [
+    {file = "aiohttp_socks-0.6.0-py3-none-any.whl", hash = "sha256:db7aa48c0758ee45d7dbc1fde499912ec6fb77eab77a6e2808825d1f41d4e300"},
+    {file = "aiohttp_socks-0.6.0.tar.gz", hash = "sha256:b95dcfba3740c8499f4ff633846d72108459d25650ebc1ae8b299cb817088013"},
 ]
+aiosocks = []
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
@@ -877,6 +918,10 @@ pymongo = [
     {file = "pymongo-3.11.4-cp39-cp39-win_amd64.whl", hash = "sha256:3491c7de09e44eded16824cb58cf9b5cc1dc6f066a0bb7aa69929d02aa53b828"},
     {file = "pymongo-3.11.4-py2.7-macosx-10.14-intel.egg", hash = "sha256:506a6dab4c7ffdcacdf0b8e70bd20eb2e77fa994519547c9d88d676400fcad58"},
     {file = "pymongo-3.11.4.tar.gz", hash = "sha256:539d4cb1b16b57026999c53e5aab857fe706e70ae5310cc8c232479923f932e6"},
+]
+python-socks = [
+    {file = "python-socks-1.2.4.tar.gz", hash = "sha256:7d0ef2578cead9f762b71317d25a6c118fabaf79535555e75b3e102f5158ddd8"},
+    {file = "python_socks-1.2.4-py3-none-any.whl", hash = "sha256:9f12e8fe78629b87543fad0e4ea0ccf103a4fad6a7872c5d0ecb36d9903fa548"},
 ]
 regex = [
     {file = "regex-2021.7.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:e6a1e5ca97d411a461041d057348e578dc344ecd2add3555aedba3b408c9f874"},

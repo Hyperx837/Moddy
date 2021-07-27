@@ -1,8 +1,9 @@
-from .logger import logger
 import os
 
 from discord.ext import commands
 from discord.ext.commands.errors import ExtensionAlreadyLoaded
+
+from .logger import logger
 
 
 class DiscordBot(commands.Bot):
@@ -46,10 +47,10 @@ class DiscordBot(commands.Bot):
                 )
 
     async def on_ready(self):
-        logger.info("Logged on as {0} (ID: {0.id})".format(self.user))
+        logger.log("Logged on as {0} (ID: {0.id})".format(self.user))
         self.is_connected = True
 
     async def on_disconnect(self):
         if self.is_connected:
-            logger.error("[red]Connection closed with discord websocket")
+            logger.error("Connection closed with discord websocket")
             self.is_connected = False

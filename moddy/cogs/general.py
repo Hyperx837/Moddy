@@ -46,7 +46,7 @@ class General(commands.Cog):
         """Get the bot's current websocket and API latency."""
         with benchmark() as timer:
             message: Message = await ctx.send("Testing Ping...")
-        asyncio.create_task(message.delete())
+        await message.delete()
         await ctx.send(embed=ping_embed(self.bot.latency, timer.elapsed))
 
 

@@ -111,7 +111,7 @@ class Google(commands.Cog):
 
         logger.info(
             get_mention(ctx.author),
-            f'reuqested results for "{search_term}" in #{ctx.channel}',
+            f'requested results for "{search_term}" in [#f5b042]#{ctx.channel}',
         )
 
 

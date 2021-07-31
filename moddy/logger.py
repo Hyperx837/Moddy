@@ -7,9 +7,9 @@ class Logger:
         self.theme = Theme(
             {
                 "success": "#7DEB34",
-                "info": "dim #edffbd",
+                "info": "dim #e8fff8",
                 "warning": "#d1ca3b",
-                "error": "#8F003C",
+                "error": "#fa0068",
             }
         )
         self.console = Console(theme=self.theme)
@@ -18,16 +18,16 @@ class Logger:
         self.console.log(*args, _stack_offset=2, **kwargs)
 
     def success(self, *args, **kwargs):
-        self.log(*args, style="success", **kwargs)
+        self.console.log(*args, style="success", _stack_offset=2, **kwargs)
 
     def info(self, *args, **kwargs):
-        self.log(*args, style="info", **kwargs)
+        self.console.log(*args, style="info", _stack_offset=2, **kwargs)
 
     def warning(self, *args, **kwargs):
-        self.log(*args, style="warning", **kwargs)
+        self.console.log(*args, style="warning", _stack_offset=2, **kwargs)
 
     def error(self, *args, **kwargs):
-        self.log(*args, style="error", **kwargs)
+        self.console.log(*args, style="error", _stack_offset=2, **kwargs)
 
 
 logger = Logger()

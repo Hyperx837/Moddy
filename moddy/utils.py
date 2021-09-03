@@ -1,15 +1,37 @@
+import abc
 import asyncio
 import contextlib
 import importlib
+import os
 import time
 from dataclasses import dataclass
 from typing import Coroutine, Union
 
 import discord
 from aiohttp import ClientResponse
+from discord.ext import commands
 from rich.console import Console
 
 import moddy.main
+from moddy import config
+
+
+class SecretNotFound(Exception):
+    def __init__(self, secret, *args: object) -> None:
+        error = f'Secret "{secret}" not found in either environment or config '
+        super().__init__(error, *args)
+
+
+def get_secret(secret: str):
+    env = os.getenv(secret) or os.getenv(secret.capitalize())
+    if env:
+        return env
+
+    if hasattr(config, secret):
+        return getattr(config, secret)
+
+    raise SecretNotFound(secret)
+
 
 headers = {
     "User-Agent": (

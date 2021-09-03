@@ -15,7 +15,6 @@ lxml = "^4.6.3"
 rich = "^10.4.0"
 motor = "^2.4.0"
 pydantic = "^1.8.2"
-aiosocks = {git = "https://github.com/nibrag/aiosocks"}
 aiohttp-socks = "^0.6.0"
 
 [tool.poetry.dev-dependencies]

@@ -11,8 +11,7 @@ from moddy.database.get_data import scrape
 from moddy.datastructures import DictStack, Question
 from moddy.embeds import ModdyEmbed, ModdySuccess
 from moddy.logger import logger
-from moddy.utils import (benchmark, get_mention, languages, numbers,
-                         reloadr)
+from moddy.utils import benchmark, get_mention, languages, numbers, reloadr
 
 reloadr(datastructures)
 
@@ -69,10 +68,7 @@ class Quiz(commands.Cog):
             self.question: Question = await self.questions.getitem(msg.id)
 
         except KeyError:
-            logger.error(
-                f"[bold red] failed to retrive question with id {msg.id} from cache or database"
-                f"\nUser: {get_mention(member)}"
-            )
+            return
         # if bot was the one to react to the message or reaction was added to another message
 
         asyncio.create_task(msg.remove_reaction(emoji, member))

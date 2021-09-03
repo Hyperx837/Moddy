@@ -31,24 +31,6 @@ attrs = ">=19.2.0"
 python-socks = {version = ">=1.2.2", extras = ["asyncio"]}
 
 [[package]]
-name = "aiosocks"
-version = "0.2.6"
-description = "SOCKS proxy client for asyncio and aiohttp"
-category = "main"
-optional = false
-python-versions = "*"
-develop = false
-
-[package.dependencies]
-aiohttp = ">=3.4"
-
-[package.source]
-type = "git"
-url = "https://github.com/nibrag/aiosocks"
-reference = "master"
-resolved_reference = "d4a85e73c9e3beadd7ab4c46b8f3ceb3b57338b2"
-
-[[package]]
 name = "appdirs"
 version = "1.4.4"
 description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
@@ -549,7 +531,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "fe85e09fb4de6f48dec9b01de315c77742eb51f48dbdf2b78937ee7b3d2a2a34"
+content-hash = "715b686136d39bbbdb08e60e23791cb230a740b87be0a46c2122a11424c0d8b0"
 
 [metadata.files]
 aiohttp = [
@@ -595,7 +577,6 @@ aiohttp-socks = [
     {file = "aiohttp_socks-0.6.0-py3-none-any.whl", hash = "sha256:db7aa48c0758ee45d7dbc1fde499912ec6fb77eab77a6e2808825d1f41d4e300"},
     {file = "aiohttp_socks-0.6.0.tar.gz", hash = "sha256:b95dcfba3740c8499f4ff633846d72108459d25650ebc1ae8b299cb817088013"},
 ]
-aiosocks = []
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},

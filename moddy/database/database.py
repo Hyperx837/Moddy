@@ -1,19 +1,17 @@
-from moddy.logger import logger
+import pymongo
 from moddy.config import DB_NAME, MONGO_URL
+from moddy.database.models import QuizModel
+from moddy.logger import logger
+from moddy.utils import console, event_loop
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
-    AsyncIOMotorDatabase,
     AsyncIOMotorCollection,
+    AsyncIOMotorDatabase,
 )
-from moddy.utils import event_loop, console
-from moddy.database.models import QuizModel
-import pymongo
 
 try:
     client = AsyncIOMotorClient(MONGO_URL, io_loop=event_loop)
 
 except pymongo.errors.ServerSelectionTimeoutError:
-    logger.error(
-        "[bold red]Database Error: Connection time out. start or restart mongod.service"
-    )
+    logger.error("Database Error: Connection time out. start or restart mongod.service")
 database: AsyncIOMotorDatabase = client[DB_NAME]

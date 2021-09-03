@@ -10,6 +10,7 @@ class DiscordBot(commands.Bot):
     def __init__(self, db, **kwargs):
         super().__init__(command_prefix=commands.when_mentioned_or("."), **kwargs)
         self.db = db
+        self.is_connected = False
         self.load_cogs()
 
     @property
@@ -33,7 +34,6 @@ class DiscordBot(commands.Bot):
 
     def load_cogs(self, *, reload=False):
         loader = self.reload_extension if reload else self.load_extension
-
         for cog in self.cogs:
             try:
                 loader(cog)

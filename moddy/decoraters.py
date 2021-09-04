@@ -9,9 +9,7 @@ def guild_only(*, cmd_func=None, command_name: str, guild_id: int):
     def wrapper(func: Callable):
         @functools.wraps(func)
         async def command(ctx: commands.Context, *args, **kwargs):
-            print("hi")
             guild = moddy.main.moddity.bot.get_guild(guild_id)
-            print(guild)
             if guild != ctx.guild:
                 return
             return await func(ctx, *args, **kwargs)

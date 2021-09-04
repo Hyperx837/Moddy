@@ -9,11 +9,24 @@ from typing import Coroutine, Union
 
 import discord
 from aiohttp import ClientResponse
-from discord.ext import commands
 from rich.console import Console
 
 import moddy.main
 from moddy import config
+
+
+async def send_hook(
+    name, channel: discord.TextChannel, *args, user: discord.Member = None, **kwargs
+):
+    hook = discord.utils.get(await channel.webhooks(), name=name)
+    if not hook:
+        hook = await channel.create_webhook(name="Hooker")
+    if user:
+        await hook.send(
+            *args, username=user.display_name, avatar_url=user.avatar_url, **kwargs
+        )
+    else:
+        await hook.send(*args, **kwargs)
 
 
 class SecretNotFound(Exception):

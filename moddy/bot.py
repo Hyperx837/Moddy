@@ -1,4 +1,5 @@
 import os
+from aiohttp.client import ClientSession
 
 from discord.ext import commands
 from .config import cog_paths
@@ -8,9 +9,10 @@ from .logger import logger
 
 
 class DiscordBot(commands.Bot):
-    def __init__(self, db, **kwargs):
+    def __init__(self, db, http: ClientSession, **kwargs):
         super().__init__(command_prefix=commands.when_mentioned_or("."), **kwargs)
         self.db = db
+        self.session = http
         self.is_connected = False
         self.load_cogs()
 
@@ -32,7 +34,7 @@ class DiscordBot(commands.Bot):
                 self.load_extension(cog)  # detect new cogs while reloading
 
             except Exception as exc:
-                print(
+                logger.error(
                     f"Could not load extension {cog} due to {exc.__class__.__name__}: {exc}"
                 )
 

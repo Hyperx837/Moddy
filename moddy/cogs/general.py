@@ -1,12 +1,21 @@
 # -*- coding: utf-8 -*-
-
-
 import asyncio
-from moddy.logger import logger
+import re
+import traceback
 
+import discord
+from discord import Member, Message
 from discord.ext import commands
-from discord.message import Message
-from moddy.embeds import ModdyEmbed, command_not_allowed, ping_embed, reload_embed
+from discord.role import Role
+from moddy.config import deleted_channel
+from moddy.embeds import (
+    ModdyEmbed,
+    ModdyError,
+    command_not_allowed,
+    ping_embed,
+    reload_embed,
+)
+from moddy.logger import logger
 from moddy.utils import benchmark, reloadr
 
 reloadr()
@@ -15,16 +24,34 @@ reloadr()
 class General(commands.Cog):
     """The description for General goes here."""
 
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot: commands.Bot = bot
 
     @commands.command(name="clear")
     async def clear_messages(self, ctx: commands.Context, amount: int = 0):
-        if ctx.author.permissions_in(ctx.channel).manage_messages:
-            await ctx.channel.purge(limit=amount + 1)
-
-        else:
+        chan = self.bot.get_channel(deleted_channel)
+        if ctx.channel == chan and ctx.author.id != self.bot.owner_id:
+            return
+        if not ctx.author.permissions_in(ctx.channel).manage_messages:
             await ctx.send(embed=command_not_allowed("clear", "Manage messages"))
+            return
+
+        try:
+            await ctx.message.delete()
+            self.bot.last_deleted = ctx.message
+
+        except discord.errors.NotFound:
+            pass
+
+        await ctx.channel.purge(limit=amount)
+        message = await ctx.send(
+            embed=ModdyEmbed(
+                "I cleared up some junk",
+                f"Cleared up {amount} message(s) requested to delete by `@{ctx.author.display_name}`",
+            )
+        )
+        await message.delete(delay=5)
+        self.bot.last_deleted = ctx.message
 
     @commands.command(name="reload")
     async def reload_cogs(self, ctx: commands.Context):

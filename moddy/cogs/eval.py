@@ -17,7 +17,6 @@ class Eval(commands.Cog):
     @commands.command("exec")
     @commands.is_owner()
     async def exec(self, ctx, *expression):
-
         out = exec(" ".join(expression))
         if iscoroutine(out):
             await out

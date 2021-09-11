@@ -1,19 +1,23 @@
+import asyncio
 import importlib  # noqa: F401
 from inspect import iscoroutine
 
+import discord
+import moddy.bot
 import moddy.main  # noqa: F401
 from discord.ext import commands
-import asyncio
+from moddy.utils import console
 
 
 class Eval(commands.Cog):
     def __init__(self, bot) -> None:
-        self.bot = bot
+        self.bot: moddy.bot.DiscordBot = bot
         self.task = asyncio.create_task
 
     @commands.command("exec")
     @commands.is_owner()
     async def exec(self, ctx, *expression):
+
         out = exec(" ".join(expression))
         if iscoroutine(out):
             await out

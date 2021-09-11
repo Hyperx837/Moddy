@@ -53,7 +53,7 @@ provide_query = ModdyError(
 )
 
 
-reload_embed = ModdyEmbed("Bot successfully reloaded 🦾")
+reload_embed = ModdyEmbed("Reread all instructions 💥 ")
 
 
 def google_embed(query: str, answer: str, *, img=None) -> ModdyEmbed:

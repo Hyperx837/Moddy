@@ -5,4 +5,5 @@ data.json
 ideas.txt
 *.html
 moddy/cogs/extentions
+config.json
 cog_template.py

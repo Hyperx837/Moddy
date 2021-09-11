@@ -1,5 +1,7 @@
 import asyncio
 import sys
+from typing import Type, Union
+
 from aiohttp import ClientSession
 
 from .bot import DiscordBot
@@ -11,22 +13,20 @@ from .logger import logger
 
 
 class Moddity:
-    def __init__(self) -> None:
+    def __init__(self, config) -> None:
         self.loop = asyncio.get_event_loop()
         self.db = database
         # self.http = Session()
         self.http = ClientSession()
-        self.bot = DiscordBot(self.db, self.http)
-        self.discordbot_token = api_tokens["discord"]
+        self.config = config
+        self.bot = DiscordBot(self)
 
     async def start(self) -> None:
-        self.loop.create_task(self.bot.start(self.discordbot_token))
+        self.loop.create_task(self.bot.start(self.config.token))  # type: ignore
         await self.bot.wait_until_ready()
-        # asyncio.create_task(self.http.renew_proxy())
 
     async def close(self):
         await self.bot.close()
-        # await self.http.close()
         pending = asyncio.all_tasks()
         await asyncio.gather(*pending)
         self.loop.close()
@@ -42,8 +42,10 @@ class Moddity:
             logger.log("[bold cyan]Exiting... ")
 
 
-moddity = Moddity()
+moddity = None
 
 
-def main():
+def main(config):
+    global moddity
+    moddity = Moddity(config)
     moddity.run()

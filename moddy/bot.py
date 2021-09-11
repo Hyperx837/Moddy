@@ -1,28 +1,38 @@
 import os
-from aiohttp.client import ClientSession
 
+import discord
+from aiohttp.client import ClientSession
 from discord.ext import commands
-from .config import cog_paths
 from discord.ext.commands.errors import ExtensionAlreadyLoaded
+from discord.flags import Intents
 
 from .logger import logger
 
 
 class DiscordBot(commands.Bot):
-    def __init__(self, db, http: ClientSession, **kwargs):
-        super().__init__(command_prefix=commands.when_mentioned_or("."), **kwargs)
-        self.db = db
-        self.session = http
+    def __init__(self, main, **kwargs):
+        super().__init__(
+            command_prefix=commands.when_mentioned_or("."),
+            intents=Intents.all(),
+            **kwargs,
+        )
+        self.main = main
+        self.db = main.db
+        self.session = main.http
         self.is_connected = False
+        self.cog_paths = [*main.config.cog_paths, *main.config.common.cog_paths]
+        self.last_deleted = None
         self.load_cogs()
 
     @property
     def cogs(self):
-        for path in cog_paths:
+        for path in self.cog_paths:
             cog_files = os.listdir(f"moddy/cogs/{path}")
             for file in cog_files:
                 if file.endswith(".py") and not file.startswith("__"):
-                    yield f"moddy.cogs.{path.replace('/', '.')}{file.strip('.py')}"
+                    filename, _ = os.path.splitext(file)
+                    module = f"moddy.cogs.{path.replace('/', '.')}{filename}"
+                    yield module
 
     def load_cogs(self, *, reload=False):
         loader = self.reload_extension if reload else self.load_extension
@@ -32,6 +42,7 @@ class DiscordBot(commands.Bot):
 
             except ExtensionAlreadyLoaded:
                 self.load_extension(cog)  # detect new cogs while reloading
+                logger.success(f"Successfully loaded {cog}")
 
             except Exception as exc:
                 logger.error(
@@ -40,6 +51,8 @@ class DiscordBot(commands.Bot):
 
     async def on_ready(self):
         logger.log("Logged on as {0} (ID: {0.id})".format(self.user))
+        activity = discord.Game("with Reality")
+        await self.change_presence(status=discord.Status.idle, activity=activity)
         self.is_connected = True
 
     async def on_disconnect(self):

@@ -16,6 +16,7 @@ rich = "^10.4.0"
 motor = "^2.4.0"
 pydantic = "^1.8.2"
 aiohttp-socks = "^0.6.0"
+watchdog = "^2.1.5"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.7"

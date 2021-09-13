@@ -4,6 +4,6 @@ moddy/config.py
 data.json
 ideas.txt
 *.html
-moddy/cogs/extentions
+moddy/extentions
 config.json
 cog_template.py

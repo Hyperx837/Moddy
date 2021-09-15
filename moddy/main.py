@@ -1,25 +1,28 @@
 import asyncio
+import importlib
 import sys
-from typing import Type, Union
+from pathlib import Path
 
 from aiohttp import ClientSession
 
-from .bot import DiscordBot
-from .config import api_tokens
 from .database.database import database
 from .logger import logger
 
 # from .proxy import Session
 
 
-class Moddity:
+class Assembler:
+    """puts everything together and provides methods to run the complete program"""
+
     def __init__(self, config) -> None:
         self.loop = asyncio.get_event_loop()
         self.db = database
         # self.http = Session()
         self.http = ClientSession()
         self.config = config
-        self.bot = DiscordBot(self)
+        bot_module = importlib.import_module(self.config.entrypoint)
+        self.base = Path("moddy/")
+        self.bot = bot_module.DiscordBot(self)  # type: ignore
 
     async def start(self) -> None:
         self.loop.create_task(self.bot.start(self.config.token))  # type: ignore
@@ -34,6 +37,7 @@ class Moddity:
     def run(self) -> None:
         try:
             self.loop.run_until_complete(self.start())
+            [self.loop.create_task(task) for task in self.bot.tasks]
             self.loop.run_forever()
 
         except KeyboardInterrupt:
@@ -42,10 +46,10 @@ class Moddity:
             logger.log("[bold cyan]Exiting... ")
 
 
-moddity = None
+assemble = None
 
 
 def main(config):
-    global moddity
-    moddity = Moddity(config)
-    moddity.run()
+    global assemble
+    assemble = Assembler(config)
+    assemble.run()

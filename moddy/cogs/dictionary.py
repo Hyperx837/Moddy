@@ -2,7 +2,7 @@
 import discord
 from discord.ext import commands
 from moddy.logger import logger
-from moddy.utils import get_url
+from moddy.utils.misc import request_url
 
 
 class Dictionary(commands.Cog):
@@ -16,7 +16,7 @@ class Dictionary(commands.Cog):
     async def dictionary(self, ctx: commands.Context, *words):
         phrase = " ".join(words)
         url = self.base_url.format(phrase)
-        resp = await get_url(url, json=True)
+        resp = await request_url(url, is_json=True)
         try:
             meaning = resp[0]["meanings"][0]["definitions"][0]["definition"]
             await ctx.send(meaning)

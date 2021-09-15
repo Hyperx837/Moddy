@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from .database.database import database
 from .logger import logger
-from .utils import call_every
+from .utils.misc import call_every
 
 
 class Session:

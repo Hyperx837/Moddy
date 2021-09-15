@@ -6,7 +6,6 @@ import discord
 import moddy.bot
 import moddy.main  # noqa: F401
 from discord.ext import commands
-from moddy.utils import console
 
 
 class Eval(commands.Cog):

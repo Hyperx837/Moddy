@@ -11,7 +11,8 @@ from bs4 import BeautifulSoup, Tag
 from discord.ext import commands
 from moddy.config import bot_commands
 from moddy.embeds import google_embed, provide_query
-from moddy.utils import get_mention, get_url, limit, reloadr
+from moddy.utils.misc import request_url, limit, reloadr
+from moddy.utils.discord import get_mention
 
 reloadr()
 
@@ -80,7 +81,9 @@ class Google(commands.Cog):
 
     async def search_google(self, query):
         escaped_query = parse.quote(query)
-        data = await get_url(f"https://google.com/search?q={escaped_query}", text=True)
+        data = await request_url(
+            f"https://google.com/search?q={escaped_query}", is_text=True
+        )
         print(data, file=open("text.html", "w"))
         answer, img = self.scrape_data(data)
 

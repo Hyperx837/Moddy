@@ -5,7 +5,6 @@ from typing import Any, Callable, List, Type, TypeVar
 from discord import Message
 from discord.ext import commands
 
-import moddy.main
 from moddy.logger import logger
 
 deco = TypeVar("deco", bound=Callable[..., Any])
@@ -28,7 +27,7 @@ class limitedguilds(commands.Cog):
             @functools.wraps(func)
             async def comm(self, ctx: commands.Context, *args, **kwargs):
                 guild_id = self.guild_id  # type: ignore
-                guild = moddy.main.moddity.bot.get_guild(guild_id)
+                guild = self.bot.get_guild(guild_id)
                 if guild != ctx.guild:
                     return
                 return await func(self, ctx, *args, **kwargs)

@@ -1,4 +1,3 @@
-import abc
 import asyncio
 import contextlib
 import importlib
@@ -7,26 +6,9 @@ import time
 from dataclasses import dataclass
 from typing import Coroutine, Union
 
-import discord
+import moddy.main
 from aiohttp import ClientResponse
 from rich.console import Console
-
-import moddy.main
-from moddy import config
-
-
-async def send_hook(
-    name, channel: discord.TextChannel, *args, user: discord.Member = None, **kwargs
-):
-    hook = discord.utils.get(await channel.webhooks(), name=name)
-    if not hook:
-        hook = await channel.create_webhook(name="Hooker")
-    if user:
-        await hook.send(
-            *args, username=user.display_name, avatar_url=user.avatar_url, **kwargs
-        )
-    else:
-        await hook.send(*args, **kwargs)
 
 
 class SecretNotFound(Exception):
@@ -35,7 +17,8 @@ class SecretNotFound(Exception):
         super().__init__(error, *args)
 
 
-def get_secret(secret: str):
+def get_secret(secret: str) -> str:
+    config = moddy.main.assemble.config
     env = os.getenv(secret) or os.getenv(secret.capitalize())
     if env:
         return env
@@ -70,31 +53,35 @@ def limit(string: str, limit: int):
     return string
 
 
-def call_every(*, secs):
+def call_every(*, days=0, hours=0, minutes=0, secs=0):
     def wrapper(coro: Coroutine):
         async def schedular(*args, **kwargs):
+            amount = days * 86400 + hours * 3600 + minutes * 60 + secs
             while True:
                 await coro(*args, **kwargs)
-                await asyncio.sleep(secs)
+                await asyncio.sleep(amount)
 
         return schedular
 
     return wrapper
 
 
-async def get_url(
-    url, *args, json=False, text=False, **kwargs
+async def request_url(
+    url, *args, is_json=False, is_text=False, method="GET", **kwargs
 ) -> Union[ClientResponse, dict, str]:
-    session = moddy.main.moddity.http
-    async with session.get(  # type: ignore
-        url, headers=headers, *args, **kwargs
+    session = moddy.main.assemble.http
+    if "headers" in kwargs:
+        headers = kwargs.pop("headers")
+    else:
+        headers = globals()["headers"]
+    async with session.request(  # type: ignore
+        method, url, headers=headers, *args, **kwargs
     ) as response:
-        if json:
+        if is_json:
             return await response.json()
 
-        elif text:
+        elif is_text:
             return await response.text()
-
         return response
 
 
@@ -112,10 +99,6 @@ def benchmark():
     timer.elapsed = round(finish - start, 2)
 
 
-def get_mention(user: discord.Member):
-    return f"[{user.color}]@{user.display_name}[/{user.color}]"
-
-
 def remove_prefix(string, prefix):
     if string.startswith(prefix):
         string = string[len(prefix) :]
@@ -123,8 +106,9 @@ def remove_prefix(string, prefix):
 
 
 def reloadr(*modules):
-    from moddy import embeds, utils
+    from moddy import embeds
+    from moddy.utils import discord, db, misc
 
-    modules = [embeds, utils, *modules]
+    modules = [embeds, discord, db, misc, *modules]
     for module in modules:
         importlib.reload(module)

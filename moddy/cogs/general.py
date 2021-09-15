@@ -4,19 +4,15 @@ import re
 import traceback
 
 import discord
-from discord import Member, Message
 from discord.ext import commands
-from discord.role import Role
-from moddy.config import deleted_channel
 from moddy.embeds import (
     ModdyEmbed,
-    ModdyError,
     command_not_allowed,
     ping_embed,
     reload_embed,
 )
 from moddy.logger import logger
-from moddy.utils import benchmark, reloadr
+from moddy.utils.misc import benchmark, reloadr
 
 reloadr()
 
@@ -29,9 +25,6 @@ class General(commands.Cog):
 
     @commands.command(name="clear")
     async def clear_messages(self, ctx: commands.Context, amount: int = 0):
-        chan = self.bot.get_channel(deleted_channel)
-        if ctx.channel == chan and ctx.author.id != self.bot.owner_id:
-            return
         if not ctx.author.permissions_in(ctx.channel).manage_messages:
             await ctx.send(embed=command_not_allowed("clear", "Manage messages"))
             return
@@ -72,7 +65,7 @@ class General(commands.Cog):
     async def ping(self, ctx: commands.Context):
         """Get the bot's current websocket and API latency."""
         with benchmark() as timer:
-            message: Message = await ctx.send("Testing Ping...")
+            message: discord.Message = await ctx.send("Testing Ping...")
         await message.delete()
         await ctx.send(embed=ping_embed(self.bot.latency, timer.elapsed))
 

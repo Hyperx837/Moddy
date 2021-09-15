@@ -1,12 +1,15 @@
+from asyncio.tasks import Task
 import os
+from pathlib import Path
+from typing import List
 
 import discord
-from aiohttp.client import ClientSession
 from discord.ext import commands
 from discord.ext.commands.errors import ExtensionAlreadyLoaded
 from discord.flags import Intents
 
-from .logger import logger
+import moddy.main
+from moddy.logger import logger
 
 
 class DiscordBot(commands.Bot):
@@ -20,23 +23,25 @@ class DiscordBot(commands.Bot):
         self.db = main.db
         self.session = main.http
         self.is_connected = False
-        self.cog_paths = [*main.config.cog_paths, *main.config.common.cog_paths]
+        self.cog_paths = [*main.config.cog_paths, "cogs/"]
         self.last_deleted = None
+        self.tasks: List[Task] = []
         self.load_cogs()
 
     @property
-    def cogs(self):
-        for path in self.cog_paths:
-            cog_files = os.listdir(f"moddy/cogs/{path}")
-            for file in cog_files:
-                if file.endswith(".py") and not file.startswith("__"):
-                    filename, _ = os.path.splitext(file)
-                    module = f"moddy.cogs.{path.replace('/', '.')}{filename}"
-                    yield module
+    def cog_names(self):
+        for cog_path in self.cog_paths:
+            path = self.main.base / Path(cog_path)
+            for file in path.glob("*.py"):
+                if file.name.startswith("__"):
+                    continue
+
+                module_name = str(path / file.stem).replace("/", ".")
+                yield module_name
 
     def load_cogs(self, *, reload=False):
         loader = self.reload_extension if reload else self.load_extension
-        for cog in self.cogs:
+        for cog in self.cog_names:
             try:
                 loader(cog)
 

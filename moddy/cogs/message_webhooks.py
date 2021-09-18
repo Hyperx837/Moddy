@@ -5,7 +5,7 @@ import discord
 from discord.errors import Forbidden
 from discord.ext import commands
 from moddy.logger import logger
-from moddy.utils import send_hook
+from moddy.utils.discord import send_hook
 
 
 class MessageWebhooks(commands.Cog):

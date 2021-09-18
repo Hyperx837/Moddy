@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from .database.database import database
 from .logger import logger
-from .utils.misc import call_every
+from .utils.misc import call_every, request_url
 
 
 class Session:
@@ -38,16 +38,7 @@ class Session:
     async def get_url(
         self, url, *args, json=False, text=False, **kwargs
     ) -> Union[ClientResponse, dict, str]:
-        async with self.session.get(  # type: ignore
-            url, headers=self.headers, proxy=self.proxy_url, *args, **kwargs
-        ) as response:
-            if json:
-                return await response.json()
-
-            elif text:
-                return await response.text()
-
-            return response
+        return await request_url(url, *args, json, text, self.proxy_url, **kwargs)
 
     async def close(self):
         await self.session.close()

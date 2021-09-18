@@ -7,7 +7,8 @@ import discord
 import moddy.bot
 from discord.ext import commands
 from moddy import datastructures
-from moddy.database.get_data import scrape
+
+# from moddy.database.get_data import scrape
 from moddy.datastructures import DictStack, Question
 from moddy.embeds import ModdyEmbed, ModdySuccess
 from moddy.logger import logger

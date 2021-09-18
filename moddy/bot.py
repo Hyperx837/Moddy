@@ -1,5 +1,4 @@
 from asyncio.tasks import Task
-import os
 from pathlib import Path
 from typing import List
 
@@ -31,7 +30,7 @@ class DiscordBot(commands.Bot):
     @property
     def cog_names(self):
         for cog_path in self.cog_paths:
-            path = self.main.base / Path(cog_path)
+            path: Path = self.main.base / Path(cog_path)
             for file in path.glob("*.py"):
                 if file.name.startswith("__"):
                     continue

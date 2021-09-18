@@ -6,9 +6,13 @@ import time
 from dataclasses import dataclass
 from typing import Coroutine, Union
 
-import moddy.main
 from aiohttp import ClientResponse
+from moddy import main
 from rich.console import Console
+
+
+def everyday(hours=0, minutes=0):
+    pass
 
 
 class SecretNotFound(Exception):
@@ -18,7 +22,7 @@ class SecretNotFound(Exception):
 
 
 def get_secret(secret: str) -> str:
-    config = moddy.main.assemble.config
+    config = main.assemble.config
     env = os.getenv(secret) or os.getenv(secret.capitalize())
     if env:
         return env
@@ -69,7 +73,7 @@ def call_every(*, days=0, hours=0, minutes=0, secs=0):
 async def request_url(
     url, *args, is_json=False, is_text=False, method="GET", **kwargs
 ) -> Union[ClientResponse, dict, str]:
-    session = moddy.main.assemble.http
+    session = main.assemble.http
     if "headers" in kwargs:
         headers = kwargs.pop("headers")
     else:
@@ -107,7 +111,7 @@ def remove_prefix(string, prefix):
 
 def reloadr(*modules):
     from moddy import embeds
-    from moddy.utils import discord, db, misc
+    from moddy.utils import db, discord, misc
 
     modules = [embeds, discord, db, misc, *modules]
     for module in modules:

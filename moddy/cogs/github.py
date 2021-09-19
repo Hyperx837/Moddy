@@ -27,8 +27,12 @@ class GitHub(commands.Cog):
         try:
             repo_metadata = await gh.getitem(f"/repos/{repo}")
         except gidgethub.BadRequest:
+            await ctx.send("Finding the closest match...")
             repos = (await gh.getitem(f"/search/repositories?q={repo}"))["items"]
-            repo_metadata = repos["items"][0]
+            if len(repos) == 0:
+                await ctx.send("such repo doesn't exist")
+                return
+            repo_metadata = repos[0]
         await ctx.send(repo_metadata["full_name"])
 
 
